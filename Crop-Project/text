@@ -1,0 +1,426 @@
+cd ~/OneDrive/Documents/PY-JSX/Crop-Project/api
+
+source venv/Scripts/activate
+which python
+
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Hello, Flask!"
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # Respond with "No Content" for favicon.ico
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+pip install pandas
+pip show pandas
+import pandas as pd
+
+# Example: Creating a DataFrame
+data = {"Name": ["Alice", "Bob"], "Age": [25, 30]}
+df = pd.DataFrame(data)
+print(df)
+
+#To make it easier to reinstall all dependencies in the future, you can generate a requirements.txt file:
+pip freeze > requirements.txt
+
+pip install scikit-learn
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Example data
+X = [[0, 0], [1, 1]]
+y = [0, 1]
+
+# Splitting the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Training a model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Making predictions
+predictions = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, predictions))
+
+
+import pickle
+data = {"name": "Alice", "age": 25}
+
+# Save to a file
+with open('data.pkl', 'wb') as file:  # 'wb' means write in binary mode
+    pickle.dump(data, file)
+
+
+#Saving Machine Learning Models: Save trained models to disk for later use.
+from sklearn.ensemble import RandomForestClassifier
+import pickle
+
+# Train a model
+model = RandomForestClassifier()
+model.fit([[1, 2], [3, 4]], [0, 1])
+
+# Save the model
+with open('model.pkl', 'wb') as file:
+    pickle.dump(model, file)
+
+# Load the model
+with open('model.pkl', 'rb') as file:
+    loaded_model = pickle.load(file)
+
+print(loaded_model.predict([[5, 6]]))  # Use the loaded model
+
+
+#Update your frontend code to send a POST request with the Nitrogen value as JSON:
+import React, { useState } from 'react';
+
+function App() {
+    const [nitrogen, setNitrogen] = useState('');
+
+    const handleSubmit = async () => {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ Nitrogen: nitrogen }),
+        });
+
+        const data = await response.json();
+        console.log('Response from server:', data);
+    };
+
+    return (
+        <div>
+            <input
+                type='number'
+                placeholder='Enter Nitrogen'
+                value={nitrogen}
+                onChange={(e) => setNitrogen(e.target.value)}
+            />
+            <button onClick={handleSubmit}>Submit</button>
+        </div>
+    );
+}
+
+export default App;
+
+
+#On the backend, you need to extract the JSON payload sent by the frontend. Use request.json for this.
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/predict', methods=['POST'])
+def create():
+    # Parse JSON data from the request
+    data = request.json
+    if not data or 'Nitrogen' not in data:
+        return jsonify({"error": "Invalid input"}), 400
+    
+    try:
+        # Convert Nitrogen to an integer
+        N = int(data['Nitrogen'])
+        # Example response
+        result = {"message": f"Nitrogen value received: {N}"}
+        return jsonify(result), 200
+    except ValueError:
+        return jsonify({"error": "Nitrogen value must be an integer"}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+#Use axios to send a POST request with all the parameters in the request body:
+import React, { useState } from 'react';
+import axios from 'axios';
+
+function App() {
+    const [nitrogen, setNitrogen] = useState('');
+    const [potassium, setPotassium] = useState('');
+    const [temperature, setTemperature] = useState('');
+
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.post('/api/predict', {
+                Nitrogen: nitrogen,
+                Potassium: potassium,
+                Temperature: temperature,
+            });
+
+            console.log('Response from server:', response.data);
+        } catch (error) {
+            console.error('Error:', error.response ? error.response.data : error.message);
+        }
+    };
+
+    return (
+        <div>
+            <input
+                type='number'
+                placeholder='Enter Nitrogen'
+                value={nitrogen}
+                onChange={(e) => setNitrogen(e.target.value)}
+            />
+            <input
+                type='number'
+                placeholder='Enter Potassium'
+                value={potassium}
+                onChange={(e) => setPotassium(e.target.value)}
+            />
+            <input
+                type='number'
+                placeholder='Enter Temperature'
+                value={temperature}
+                onChange={(e) => setTemperature(e.target.value)}
+            />
+            <button onClick={handleSubmit}>Submit</button>
+        </div>
+    );
+}
+
+export default App;
+
+
+#Update your Flask endpoint to handle the additional parameters:
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/predict', methods=['POST'])
+def create():
+    # Parse JSON data from the request
+    data = request.json
+    required_fields = ['Nitrogen', 'Potassium', 'Temperature']
+    
+    # Validate that all required fields are present
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        # Extract and convert parameters
+        N = int(data['Nitrogen'])
+        K = int(data['Potassium'])
+        T = float(data['Temperature'])
+
+        # Example processing (modify as needed)
+        result = {
+            "Nitrogen": N,
+            "Potassium": K,
+            "Temperature": T,
+            "message": "Data received successfully"
+        }
+        return jsonify(result), 200
+    except ValueError:
+        return jsonify({"error": "Invalid input values"}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+#Create a Utility File
+import axios from 'axios';
+
+export const sendDataToServer = async (endpoint, payload) => {
+    try {
+        const response = await axios.post(endpoint, payload);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response
+            ? error.response.data.error || "Server error"
+            : "Network error";
+        return { success: false, error: errorMessage };
+    }
+};
+
+
+#Import the sendDataToServer function into your App.js file and use it in handleSubmit.
+
+import React, { useState } from 'react';
+import { sendDataToServer } from './apiUtils';
+
+function App() {
+    const [nitrogen, setNitrogen] = useState('');
+    const [potassium, setPotassium] = useState('');
+    const [temperature, setTemperature] = useState('');
+
+    const handleSubmit = async () => {
+        const payload = {
+            Nitrogen: nitrogen,
+            Potassium: potassium,
+            Temperature: temperature,
+        };
+
+        const response = await sendDataToServer('/api/predict', payload);
+
+        if (response.success) {
+            console.log('Server response:', response.data);
+        } else {
+            console.error('Error:', response.error);
+        }
+    };
+
+    return (
+        <div>
+            <input
+                type='number'
+                placeholder='Enter Nitrogen'
+                value={nitrogen}
+                onChange={(e) => setNitrogen(e.target.value)}
+            />
+            <input
+                type='number'
+                placeholder='Enter Potassium'
+                value={potassium}
+                onChange={(e) => setPotassium(e.target.value)}
+            />
+            <input
+                type='number'
+                placeholder='Enter Temperature'
+                value={temperature}
+                onChange={(e) => setTemperature(e.target.value)}
+            />
+            <button onClick={handleSubmit}>Submit</button>
+        </div>
+    );
+}
+
+export default App;
+
+
+#Update Recommend.jsx
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import Input from './Input';
+import { sendDataToServer } from './apiUtils'; // Import the utility function
+
+const Recommend = () => {
+  const [nitrogen, setNitrogen] = useState('');
+  const [phosphorus, setPhosphorus] = useState('');
+  const [potassium, setPotassium] = useState('');
+  const [temperature, setTemperature] = useState('');
+  const [humidity, setHumidity] = useState('');
+  const [pH, setpH] = useState('');
+  const [rainfall, setRainfall] = useState('');
+  const [response, setResponse] = useState(null);
+
+  const handleChange = async (e) => {
+    e.preventDefault();
+    
+    // Prepare the payload
+    const payload = {
+      Nitrogen: nitrogen,
+      Phosphorus: phosphorus,
+      Potassium: potassium,
+      Temperature: temperature,
+      Humidity: humidity,
+      pH: pH,
+      Rainfall: rainfall,
+    };
+
+    // Call the utility function to send data to the server
+    const result = await sendDataToServer('/api/predict', payload);
+
+    if (result.success) {
+      console.log('Server response:', result.data);
+      setResponse(result.data);
+    } else {
+      console.error('Error:', result.error);
+      setResponse({ error: result.error });
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className='max-w-xl w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden'
+    >
+      <div className='p-8'>
+        <h2 className='text-3xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text'>
+          Please provide the recommended value.
+        </h2>
+        <form onSubmit={handleChange}>
+          <span>Nitrogen</span>
+          <Input
+            type='number'
+            placeholder='Enter Nitrogen'
+            value={nitrogen}
+            onChange={(e) => setNitrogen(e.target.value)}
+          />
+          <span>Phosphorus</span>
+          <Input
+            type='number'
+            placeholder='Enter Phosphorus'
+            value={phosphorus}
+            onChange={(e) => setPhosphorus(e.target.value)}
+          />
+          <span>Potassium</span>
+          <Input
+            type='number'
+            placeholder='Enter Potassium'
+            value={potassium}
+            onChange={(e) => setPotassium(e.target.value)}
+          />
+          <span>Temperature</span>
+          <Input
+            type='number'
+            placeholder='Enter Temperature'
+            value={temperature}
+            onChange={(e) => setTemperature(e.target.value)}
+          />
+          <span>Humidity</span>
+          <Input
+            type='number'
+            placeholder='Enter Humidity'
+            value={humidity}
+            onChange={(e) => setHumidity(e.target.value)}
+          />
+          <span>pH</span>
+          <Input
+            type='number'
+            placeholder='Enter pH'
+            value={pH}
+            onChange={(e) => setpH(e.target.value)}
+          />
+          <span>Rainfall</span>
+          <Input
+            type='number'
+            placeholder='Enter Rainfall'
+            value={rainfall}
+            onChange={(e) => setRainfall(e.target.value)}
+          />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type='submit'
+            className='w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 disabled:opacity-50'
+          >
+            Submit
+          </motion.button>
+        </form>
+        {response && (
+          <div className='mt-4 text-white'>
+            {response.error ? (
+              <p className='text-red-500'>{response.error}</p>
+            ) : (
+              <pre>{JSON.stringify(response, null, 2)}</pre>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export default Recommend;
