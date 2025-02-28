@@ -32,7 +32,7 @@ The Crop Recommendation Website is a machine learning-powered platform designed 
 ## 📌 Installation & Setup
 ### **1. Clone the Repository**
 ```bash
-git clone https://github.com/your-username/crop-recommendation-website.git
+git clone [https://github.com/your-username/crop-recommendation-website.git](https://github.com/sdSAHABUDDIN/Crop_InnovoCon.git)
 cd crop-recommendation-website
 ```
 
